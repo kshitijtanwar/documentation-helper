@@ -36,9 +36,9 @@ vectorstore = PineconeVectorStore(
     index_name=os.environ.get("INDEX_NAME"), embedding=embeddings
 )
 
-tavily_crawl = TavilyCrawl(max_depth=5, max_pages=1000, max_breadth=20, limit=2000)
-tavily_extract = TavilyExtract()
-tavily_map = TavilyMap(max_depth=5, max_pages=1000, max_breadth=20)
+tavily_crawl = TavilyCrawl(max_depth=5, max_breadth=20, limit=1000)
+# tavily_extract = TavilyExtract()
+# tavily_map = TavilyMap(max_depth=5, max_pages=1000, max_breadth=20)
 
 
 async def index_documents(chunks: List[Document]):
@@ -64,7 +64,7 @@ async def main():
     res = tavily_crawl.invoke(
         {
             "url": "https://docs.langchain.com/oss/python/langchain/agents",
-            # "instructions": "content on ai agents",
+            "instructions": "Get all the information on the LangChain Agents from the documentation",
         }
     )
 
@@ -72,7 +72,8 @@ async def main():
         Document(
             page_content=result["raw_content"] or "No content found",
             metadata={"source": result["url"]},
-        ) for result in res["results"]
+        )
+        for result in res["results"]
     ]
     log_success(f"Total documents extracted: {len(all_docs)}")
 
