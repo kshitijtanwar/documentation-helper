@@ -37,8 +37,6 @@ vectorstore = PineconeVectorStore(
 )
 
 tavily_crawl = TavilyCrawl(max_depth=5, max_breadth=20, limit=1000)
-# tavily_extract = TavilyExtract()
-# tavily_map = TavilyMap(max_depth=5, max_pages=1000, max_breadth=20)
 
 
 async def index_documents(chunks: List[Document]):
