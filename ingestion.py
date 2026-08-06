@@ -1,3 +1,4 @@
+from importlib import metadata
 import os
 import ssl
 from typing import Any, Dict, List
@@ -40,7 +41,30 @@ tavily_map = TavilyMap(max_depth=5, max_pages=1000, max_breadth=20)
 
 
 async def main():
-    pass
+    """Main Async function to orchestrate the entire process."""
+    log_header("Documentation Ingestion Pipeline")
+    log_info(
+        "TavilyCrawl: Starting the crawl process documentation from https://docs.langchain.com/oss/python/langchain/agents",
+        color=Colors.PURPLE,
+    )
+
+    res = tavily_crawl.invoke(
+        {
+            "url": "https://docs.langchain.com/oss/python/langchain/agents",
+            "max_depth": 5,
+            "extract_depth": "advanced",
+            # "instructions": "content on ai agents",
+        }
+    )
+
+    all_docs = [
+        Document(
+            page_content=result["raw_content"] or "No content found",
+            metadata={"source": result["url"]},
+        )
+        for result in res["results"]
+    ]
+    log_success(f"Total documents extracted: {len(all_docs)}")
 
 
 if __name__ == "__main__":
