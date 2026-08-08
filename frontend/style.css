@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --claude-purple: #6e42ca;
+    --claude-light-purple: #f3f1f9;
+    --background-color: #f7f7f8;
+    --white-color: #ffffff;
+    --text-color: #1a1a1a;
+    --secondary-text-color: #555;
+    --border-color: #e0e0e0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.chat-container {
+    width: 90%;
+    max-width: 800px;
+    height: 95vh;
+    background-color: var(--white-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.chat-box {
+    flex-grow: 1;
+    padding: 30px 20px;
+    overflow-y: auto;
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    max-width: 90%;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.user-message {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.user-message .avatar {
+    margin-right: 0;
+    margin-left: 15px;
+}
+
+.text-content {
+    padding: 14px 20px;
+    border-radius: 20px;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.user-message .text-content {
+    background-color: var(--claude-purple);
+    color: var(--white-color);
+    border-bottom-right-radius: 6px;
+}
+
+.ai-message .text-content {
+    background-color: var(--claude-light-purple);
+    color: var(--text-color);
+    border: 1px solid #e5dff0;
+    border-bottom-left-radius: 6px;
+}
+
+.ai-message p {
+    margin: 0 0 10px 0;
+}
+
+.ai-message strong {
+    font-weight: 600;
+}
+
+.ai-message code {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    padding: 3px 6px;
+    font-size: 0.9em;
+    border: 1px solid var(--border-color);
+}
+
+.ai-message pre {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    margin: 12px 0;
+}
+
+.input-container {
+    display: flex;
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: #fcfcfc;
+}
+
+textarea {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    resize: none;
+    height: 28px;
+    max-height: 150px;
+    transition: height 0.2s;
+    overflow-y: auto;
+    background-color: var(--white-color);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--claude-purple);
+    box-shadow: 0 0 0 3px rgba(110, 66, 202, 0.15);
+}
+
+button {
+    background-color: var(--claude-purple);
+    color: var(--white-color);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+button:hover {
+    background-color: #5a35a8;
+}
+
+.sources-container {
+    margin-top: 18px;
+}
+
+.source-bubble {
+    display: inline-block;
+    background-color: var(--white-color);
+    color: var(--secondary-text-color);
+    padding: 9px 14px;
+    border-radius: 18px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-size: 0.88em;
+    text-decoration: none;
+    border: 1px solid #dcdce1;
+    transition: all 0.2s;
+}
+
+.source-bubble:hover {
+    background-color: #f0f0f2;
+    border-color: #c7c7cf;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    margin: 0 5px;
+    background-color: var(--secondary-text-color);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}

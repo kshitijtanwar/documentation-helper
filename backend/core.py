@@ -23,7 +23,7 @@ vectorstore = PineconeVectorStore(
     embedding=embeddings,
 )
 
-model = init_chat_model("gemini-3.5-flash", model_provider="google_genai")
+model = init_chat_model("gemini-3.6-flash", model_provider="google_genai")
 
 
 @tool(response_format="content_and_artifact")
@@ -87,5 +87,9 @@ def run_llm(query: str) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    result = run_llm(query="How to get started?")
+    result = run_llm(query="what is Fault tolerance?")
     print(result)
+
+
+
+
