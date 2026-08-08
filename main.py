@@ -2,10 +2,9 @@ from langchain_pinecone import PineconeVectorStore
 import os
 from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from constants import model_name
 
 load_dotenv()
-
-model_name = "all-MiniLM-L6-v2"
 
 embeddings = HuggingFaceEmbeddings(
     model_name=model_name,
