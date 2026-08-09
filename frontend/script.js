@@ -1,151 +1,615 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const aiAvatar = 'images/ai_avatar.png';
-    const userAvatar = 'images/user_avatar.png';
+document.addEventListener("DOMContentLoaded", () => {
 
-    // Function to add a message to the chat box
-    const addMessage = (message, sender) => {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', `${sender}-message`);
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+    const newChatBtn = document.getElementById("new-chat");
 
-        const avatar = document.createElement('img');
-        avatar.src = sender === 'user' ? userAvatar : aiAvatar;
-        avatar.alt = `${sender} avatar`;
-        avatar.classList.add('avatar');
+    const API_URL = "http://127.0.0.1:8000/chat";
 
-        const textContent = document.createElement('div');
-        textContent.classList.add('text-content');
 
-        if (sender === 'ai') {
-            const rawHtml = marked.parse(message.text);
-            textContent.innerHTML = rawHtml;
+    /* =========================
+       MARKED CONFIG
+    ========================= */
 
-            // Extract and display sources
-            const sourceRegex = /\[Source\]\((.*?)\)/g;
-            let sourceMatch;
-            const sources = [];
-            while ((sourceMatch = sourceRegex.exec(message.text)) !== null) {
-                sources.push(sourceMatch[1]);
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+
+
+    /* =========================
+       HELPERS
+    ========================= */
+
+    function scrollToBottom() {
+        requestAnimationFrame(() => {
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: "smooth"
+            });
+        });
+    }
+
+
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+
+    /* =========================
+       CODE BLOCKS
+    ========================= */
+
+    function formatCodeBlocks(container) {
+
+        const codeBlocks = container.querySelectorAll("pre");
+
+        codeBlocks.forEach((pre) => {
+
+            const code = pre.querySelector("code");
+
+            if (!code) return;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "code-wrapper";
+
+            const header = document.createElement("div");
+            header.className = "code-header";
+
+            let language = "Code";
+
+            const classes = code.className.split(" ");
+
+            const languageClass = classes.find((item) =>
+                item.startsWith("language-")
+            );
+
+            if (languageClass) {
+                language = languageClass
+                    .replace("language-", "")
+                    .toUpperCase();
             }
-             textContent.innerHTML = textContent.innerHTML.replace(/\[Source\]\((.*?)\)/g, '');
 
+            header.innerHTML = `
+                <span>${escapeHtml(language)}</span>
+                <button class="copy-code">Copy</button>
+            `;
 
-            if (sources.length > 0) {
-                const sourcesContainer = document.createElement('div');
-                sourcesContainer.classList.add('sources-container');
-                const uniqueSources = [...new Set(sources)];
+            pre.parentNode.insertBefore(wrapper, pre);
 
-                uniqueSources.forEach((source, index) => {
-                    const sourceBubble = document.createElement('a');
-                    sourceBubble.href = source;
-                    sourceBubble.target = '_blank';
-                    sourceBubble.classList.add('source-bubble');
-                    sourceBubble.textContent = `Source ${index + 1}`;
-                    sourcesContainer.appendChild(sourceBubble);
-                });
-                textContent.appendChild(sourcesContainer);
-            }
+            wrapper.appendChild(header);
+            wrapper.appendChild(pre);
 
-        } else {
-            textContent.textContent = message;
-        }
+            const copyButton = header.querySelector(".copy-code");
 
-        messageElement.appendChild(avatar);
-        messageElement.appendChild(textContent);
-        chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    };
+            copyButton.addEventListener("click", async () => {
 
-    const showLoadingIndicator = () => {
-        const loadingElement = document.createElement('div');
-        loadingElement.classList.add('message', 'ai-message');
-        loadingElement.id = 'loading-indicator';
+                try {
 
-        const avatar = document.createElement('img');
-        avatar.src = aiAvatar;
-        avatar.alt = 'AI avatar';
-        avatar.classList.add('avatar');
+                    await navigator.clipboard.writeText(
+                        code.textContent
+                    );
 
-        const textContent = document.createElement('div');
-        textContent.classList.add('text-content');
+                    copyButton.textContent = "Copied";
 
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.classList.add('loading-indicator');
-        for (let i = 0; i < 3; i++) {
-            const dot = document.createElement('div');
-            dot.classList.add('dot');
-            loadingIndicator.appendChild(dot);
-        }
-        textContent.appendChild(loadingIndicator);
+                    setTimeout(() => {
+                        copyButton.textContent = "Copy";
+                    }, 1500);
 
-        loadingElement.appendChild(avatar);
-        loadingElement.appendChild(textContent);
-        chatBox.appendChild(loadingElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    };
+                } catch (error) {
 
-    const hideLoadingIndicator = () => {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        if (loadingIndicator) {
-            loadingIndicator.remove();
-        }
-    };
+                    console.error(
+                        "Unable to copy code:",
+                        error
+                    );
 
-    const sendMessage = async () => {
-        const query = userInput.value.trim();
-        if (!query) return;
+                }
 
-        addMessage(query, 'user');
-        userInput.value = '';
-        userInput.style.height = 'auto';
-
-        showLoadingIndicator();
-
-        try {
-            const response = await fetch('http://127.0.0.1:8000/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: query }),
             });
 
-            hideLoadingIndicator();
+        });
+
+    }
+
+
+    /* =========================
+       SOURCES
+    ========================= */
+
+    function extractSources(text) {
+
+        const sources = [];
+
+        const sourceRegex =
+            /\[Source\]\((.*?)\)/g;
+
+        let match;
+
+        while ((match = sourceRegex.exec(text)) !== null) {
+
+            if (match[1]) {
+                sources.push(match[1]);
+            }
+
+        }
+
+        return [...new Set(sources)];
+    }
+
+
+    function removeSources(text) {
+
+        return text.replace(
+            /\[Source\]\((.*?)\)/g,
+            ""
+        );
+    }
+
+
+    function createSources(sources) {
+
+        if (!sources.length) {
+            return null;
+        }
+
+        const container =
+            document.createElement("div");
+
+        container.className = "sources";
+
+        const label =
+            document.createElement("div");
+
+        label.className = "sources-label";
+
+        label.textContent = "Sources";
+
+        container.appendChild(label);
+
+
+        sources.forEach((source, index) => {
+
+            const link =
+                document.createElement("a");
+
+            link.className = "source-bubble";
+
+            link.href = source;
+
+            link.target = "_blank";
+
+            link.rel = "noopener noreferrer";
+
+            link.innerHTML = `
+                <span class="source-icon">
+                    ${index + 1}
+                </span>
+
+                <span>
+                    Documentation ${index + 1}
+                </span>
+            `;
+
+            container.appendChild(link);
+
+        });
+
+
+        return container;
+    }
+
+
+    /* =========================
+       ADD USER MESSAGE
+    ========================= */
+
+    function addUserMessage(text) {
+
+        const message =
+            document.createElement("div");
+
+        message.className =
+            "message user";
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "message-content";
+
+        content.textContent = text;
+
+        message.appendChild(content);
+
+        chatBox.appendChild(message);
+
+        scrollToBottom();
+    }
+
+
+    /* =========================
+       ADD AI MESSAGE
+    ========================= */
+
+    function addAIMessage(text) {
+
+        const message =
+            document.createElement("div");
+
+        message.className =
+            "message ai";
+
+
+        /* AI icon */
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "ai-avatar";
+
+        avatar.textContent = "✦";
+
+
+        /* Content */
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "message-content";
+
+
+        /* Extract sources */
+
+        const sources =
+            extractSources(text);
+
+        const cleanText =
+            removeSources(text);
+
+
+        /* Markdown */
+
+        content.innerHTML =
+            marked.parse(cleanText);
+
+
+        /* Code formatting */
+
+        formatCodeBlocks(content);
+
+
+        /* Sources */
+
+        const sourcesElement =
+            createSources(sources);
+
+        if (sourcesElement) {
+            content.appendChild(sourcesElement);
+        }
+
+
+        message.appendChild(avatar);
+
+        message.appendChild(content);
+
+        chatBox.appendChild(message);
+
+        scrollToBottom();
+    }
+
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    function showLoading() {
+
+        const loading =
+            document.createElement("div");
+
+        loading.className =
+            "loading-message";
+
+        loading.id =
+            "loading-message";
+
+
+        loading.innerHTML = `
+            <div class="ai-avatar">✦</div>
+
+            <div class="loading-content">
+
+                <div class="thinking">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+            </div>
+        `;
+
+
+        chatBox.appendChild(loading);
+
+        scrollToBottom();
+    }
+
+
+    function hideLoading() {
+
+        const loading =
+            document.getElementById(
+                "loading-message"
+            );
+
+        if (loading) {
+            loading.remove();
+        }
+
+    }
+
+
+    /* =========================
+       SEND MESSAGE
+    ========================= */
+
+    async function sendMessage() {
+
+        const query =
+            userInput.value.trim();
+
+        if (!query) return;
+
+
+        /* Remove welcome */
+
+        const welcome =
+            document.getElementById("welcome");
+
+        if (welcome) {
+            welcome.remove();
+        }
+
+
+        /* User message */
+
+        addUserMessage(query);
+
+
+        /* Reset input */
+
+        userInput.value = "";
+
+        autoResize();
+
+
+        /* Disable input */
+
+        userInput.disabled = true;
+
+        sendBtn.disabled = true;
+
+
+        /* Loading */
+
+        showLoading();
+
+
+        try {
+
+            const response =
+                await fetch(API_URL, {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        query: query
+                    })
+
+                });
+
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
             }
 
-            const data = await response.json();
 
-            if (data.answer && data.answer.length > 0) {
-                 const aiResponse = {
-                    text: data.answer[0].text
-                };
-                addMessage(aiResponse, 'ai');
+            const data =
+                await response.json();
+
+
+            hideLoading();
+
+
+            if (
+                data.answer &&
+                data.answer.length > 0
+            ) {
+
+                const answer =
+                    data.answer[0].text;
+
+                addAIMessage(answer);
+
             } else {
-                 addMessage({text: "I couldn't find an answer to that."}, 'ai');
+
+                addAIMessage(
+                    "I couldn't find an answer to that."
+                );
+
             }
+
 
         } catch (error) {
-            hideLoadingIndicator();
-            console.error('Error fetching data:', error);
-            addMessage({text: 'Sorry, something went wrong. Please try again.'}, 'ai');
-        }
-    };
 
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+            console.error(
+                "Chat error:",
+                error
+            );
 
-    userInput.addEventListener('input', () => {
-        userInput.style.height = 'auto';
-        userInput.style.height = `${userInput.scrollHeight}px`;
-    });
+            hideLoading();
+
+
+            addAIMessage(
+                "I couldn't connect to the documentation service. Please check that the backend is running and try again."
+            );
+
+        } finally {
+
+            userInput.disabled = false;
+
+            sendBtn.disabled = false;
+
+            userInput.focus();
+
+        }
+
+    }
+
+
+    /* =========================
+       AUTO RESIZE
+    ========================= */
+
+    function autoResize() {
+
+        userInput.style.height = "auto";
+
+        userInput.style.height =
+            Math.min(
+                userInput.scrollHeight,
+                180
+            ) + "px";
+
+    }
+
+
+    /* =========================
+       EVENTS
+    ========================= */
+
+    sendBtn.addEventListener(
+        "click",
+        sendMessage
+    );
+
+
+    userInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+    userInput.addEventListener(
+        "input",
+        autoResize
+    );
+
+
+    /* =========================
+       SUGGESTIONS
+    ========================= */
+
+    document.addEventListener(
+        "click",
+        (event) => {
+
+            const suggestion =
+                event.target.closest(
+                    ".suggestion"
+                );
+
+            if (!suggestion) return;
+
+            userInput.value =
+                suggestion.textContent.trim();
+
+            autoResize();
+
+            userInput.focus();
+
+        }
+    );
+
+
+    /* =========================
+       NEW CHAT
+    ========================= */
+
+    newChatBtn.addEventListener(
+        "click",
+        () => {
+
+            chatBox.innerHTML = `
+                <section class="welcome" id="welcome">
+
+                    <div class="welcome-icon">
+                        ✦
+                    </div>
+
+                    <h1>
+                        How can I help with LangChain?
+                    </h1>
+
+                    <p>
+                        Ask questions about LangChain concepts,
+                        APIs, integrations, agents, RAG,
+                        or implementation details.
+                    </p>
+
+                    <div class="suggestions">
+
+                        <button class="suggestion">
+                            How do LangChain agents work?
+                        </button>
+
+                        <button class="suggestion">
+                            Explain RAG in LangChain
+                        </button>
+
+                        <button class="suggestion">
+                            How do I create a custom tool?
+                        </button>
+
+                    </div>
+
+                </section>
+            `;
+
+            userInput.value = "";
+
+            autoResize();
+
+            userInput.focus();
+
+        }
+    );
+
 });

@@ -3,27 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>LangChain Documentation Helper</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
     <link rel="stylesheet" href="style.css">
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
-    <div class="chat-container">
-        <div class="chat-box" id="chat-box">
-            <div class="message ai-message">
-                 <img src="https://raw.githubusercontent.com/Kshitij-2003/Langchain-Documentation-Helper/main/frontend/images/ai_avatar.png" alt="AI Avatar" class="avatar">
-                <div class="text-content">
-                    <p>Hello! How can I help you with LangChain today?</p>
+
+<div class="app">
+
+    <!-- Header -->
+    <header class="header">
+
+        <div class="brand">
+            <div class="brand-icon">
+                ✦
+            </div>
+
+            <div>
+                <div class="brand-name">
+                    LangChain Helper
+                </div>
+
+                <div class="brand-status">
+                    <span class="status-dot"></span>
+                    Documentation Assistant
                 </div>
             </div>
         </div>
-        <div class="input-container">
-            <textarea id="user-input" placeholder="Ask a question about LangChain..."></textarea>
-            <button id="send-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94L21.5 12 3.478 2.405Z"></path></svg>
+
+        <div class="header-actions">
+            <button class="header-button" title="New conversation" id="new-chat">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 5v14M5 12h14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                    />
+                </svg>
             </button>
         </div>
+
+    </header>
+
+
+    <!-- Chat -->
+    <main class="chat-box" id="chat-box">
+
+        <!-- Welcome -->
+        <section class="welcome" id="welcome">
+
+            <div class="welcome-icon">
+                ✦
+            </div>
+
+            <h1>
+                How can I help with LangChain?
+            </h1>
+
+            <p>
+                Ask questions about LangChain concepts, APIs,
+                integrations, agents, RAG, or implementation details.
+            </p>
+
+            <div class="suggestions">
+
+                <button class="suggestion">
+                    How do LangChain agents work?
+                </button>
+
+                <button class="suggestion">
+                    Explain RAG in LangChain
+                </button>
+
+                <button class="suggestion">
+                    How do I create a custom tool?
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Composer -->
+    <div class="composer-wrapper">
+
+        <div class="composer">
+
+            <textarea
+                id="user-input"
+                rows="1"
+                placeholder="Ask anything about LangChain..."
+                autocomplete="off"
+            ></textarea>
+
+            <button
+                id="send-btn"
+                class="send-button"
+                aria-label="Send message"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M4 4.8L20 12 4 19.2 7 12 4 4.8Z"
+                        fill="currentColor"
+                    />
+                </svg>
+            </button>
+
+        </div>
+
+        <div class="composer-footer">
+            LangChain Documentation Helper can make mistakes. Verify important information.
+        </div>
+
     </div>
-    <script src="script.js"></script>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
